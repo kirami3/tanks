@@ -11,6 +11,8 @@
 
 #define PORT 9997
 
+int fire_flag;
+
 
 typedef struct {
     int x;
@@ -76,6 +78,7 @@ void shoot_bullet(int x_from, int y_from, int vel_x, int vel_y) {
     new_bullet->vel.x = vel_x;
     new_bullet->pos.y = y_from;
     new_bullet->vel.y = vel_y;
+
 
 
     if (bullets.first == NULL) {
@@ -188,59 +191,63 @@ void process_input(Node *player, int ch) {
     if (ch == 's') {
         int shoot_pos_x, shoot_pos_y;
         int shoot_vel_x, shoot_vel_y;
-        switch (player->currentTrain) {
-            case 1:
-                shoot_pos_x = -1;
-                shoot_pos_y = -1;
-                shoot_vel_x = -1;
-                shoot_vel_y = -1;
-                break;
-            case 2:
-                shoot_pos_x = 1;
-                shoot_pos_y = -1;
-                shoot_vel_x = 0;
-                shoot_vel_y = -1;
-                break;
-            case 3:
-                shoot_pos_x = 3;
-                shoot_pos_y = -1;
-                shoot_vel_x = 1;
-                shoot_vel_y = -1;
-                break;
-            case 4:
-                shoot_pos_x = 3;
-                shoot_pos_y = 1;
-                shoot_vel_x = 1;
-                shoot_vel_y = 0;
-                break;
-            case 5:
-                shoot_pos_x = 3;
-                shoot_pos_y = 3;
-                shoot_vel_x = 1;
-                shoot_vel_y = 1;
-                break;
-            case 6:
-                shoot_pos_x = 1;
-                shoot_pos_y = 3;
-                shoot_vel_x = 0;
-                shoot_vel_y = 1;
-                break;
-            case 7:
-                shoot_pos_x = -1;
-                shoot_pos_y = 3;
-                shoot_vel_x = -1;
-                shoot_vel_y = 1;
-                break;
-            case 8:
-                shoot_pos_x = -1;
-                shoot_pos_y = 1;
-                shoot_vel_x = -1;
-                shoot_vel_y = 0;
-                break;
-            default:
-                break;
-        }
-        shoot_bullet(player->position.x + shoot_pos_x, player->position.y + shoot_pos_y, shoot_vel_x, shoot_vel_y);
+	if (fire_flag)
+	{
+        	switch (player->currentTrain) {
+           	case 1:
+               		shoot_pos_x = -1;
+               		shoot_pos_y = -1;
+                	shoot_vel_x = -1;
+                	shoot_vel_y = -1;
+                	break;
+            	case 2:
+                	shoot_pos_x = 1;
+                	shoot_pos_y = -1;
+                	shoot_vel_x = 0;
+                	shoot_vel_y = -1;
+                	break;
+           	case 3:
+                	shoot_pos_x = 3;
+                	shoot_pos_y = -1;
+                	shoot_vel_x = 1;
+                	shoot_vel_y = -1;
+                	break;
+            	case 4:
+                	shoot_pos_x = 3;
+                	shoot_pos_y = 1;
+                	shoot_vel_x = 1;
+                	shoot_vel_y = 0;
+                	break;
+            	case 5:
+                	shoot_pos_x = 3;
+                	shoot_pos_y = 3;
+                	shoot_vel_x = 1;
+                	shoot_vel_y = 1;
+                	break;
+            	case 6:
+               		shoot_pos_x = 1;
+                	shoot_pos_y = 3;
+                	shoot_vel_x = 0;
+                	shoot_vel_y = 1;
+                	break;
+            	case 7:
+                	shoot_pos_x = -1;
+                	shoot_pos_y = 3;
+                	shoot_vel_x = -1;
+                	shoot_vel_y = 1;
+                	break;
+            	case 8:
+                	shoot_pos_x = -1;
+                	shoot_pos_y = 1;
+                	shoot_vel_x = -1;
+                	shoot_vel_y = 0;
+                	break;
+            	default:
+                	break;
+       		}
+		fire_flag = 0;
+        	shoot_bullet(player->position.x + shoot_pos_x, player->position.y + shoot_pos_y, shoot_vel_x, shoot_vel_y);
+	}
     }
 
     if (ch == KEY_UP) {
@@ -413,9 +420,9 @@ void *udp_server(void *none) {
                 bulletinspace->x += bullet->vel.x;
                 bulletinspace->y += bullet->vel.y;
 
-                if (bulletinspace->x < 1 || bulletinspace->y < 1 || bulletinspace->x > COLS - 1 ||
-                    bulletinspace->y > LINES - 1) {
+                if (bulletinspace->x < 0 || bulletinspace->y < 0 || bulletinspace->x > COLS || bulletinspace->y > LINES) {
                     remove_bullet(bullet);
+		    fire_flag = 1;
                     continue;
                 }
 
@@ -467,6 +474,8 @@ int main(int argc, char **argv) {
     struct sockaddr_in addr;
     int addr_len;
     int ret = 0;
+
+    fire_flag = 1;
 
     players.first = NULL;
 
@@ -521,7 +530,6 @@ int main(int argc, char **argv) {
 
     server_running = 0;
 
-    // delwin(win);
     clear();
     refresh();
     pthread_join(pid, NULL);
@@ -532,11 +540,18 @@ int main(int argc, char **argv) {
 
     switch (whoWin) {
         case 1:
-            printf("PLAYER 2 has been win\n");
+            //mvaddstr(LINES/2, COLS/2,"PLAYER 2 has been win");
+	    printf("PLAYER 2 has been win\n");
             break;
         case 2:
-            printf("PLAYER 1 has been win\n");
+         //   mvaddstr(LINES/2, COLS/2,"PLAYER 1 has been win");
+	    printf("PLAYER 1 has been win\n");
             break;
     }
+   // refresh();
+   // getch();
+  //  endwin();
+  //  close(sock);
+
     return 0;
 }
